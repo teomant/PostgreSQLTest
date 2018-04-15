@@ -52,10 +52,8 @@ public class GUI extends JFrame {
         public void actionPerformed(ActionEvent e) {
             if ("showAll".equals(e.getActionCommand())){
                 try {
-                    resultArea.setText(getAll());
-                }catch (SQLException e1){
-                    JOptionPane.showMessageDialog(null, e1.getMessage());
-                }catch (ClassNotFoundException e1){
+                    resultArea.setText(ClassForRequests.getAll());
+                }catch (Exception e1){
                     JOptionPane.showMessageDialog(null, e1.getMessage());
                 }
             }
@@ -65,105 +63,19 @@ public class GUI extends JFrame {
             }
             if ("showById".equals(e.getActionCommand())){
                 try {
-                    resultArea.setText(getById(Integer.parseInt(idField.getText())));
-                }catch (SQLException e1){
-                    JOptionPane.showMessageDialog(null, e1.getMessage());
-                }catch (ClassNotFoundException e1){
-                    JOptionPane.showMessageDialog(null, e1.getMessage());
+                    resultArea.setText(ClassForRequests.getById(Integer.parseInt(idField.getText())));
                 }catch (Exception e1){
                     JOptionPane.showMessageDialog(null, e1.getMessage());
                 }
             }
             if ("deleteById".equals(e.getActionCommand())){
                 try {
-                    deleteById(Integer.parseInt(idField.getText()));
-                    resultArea.setText(getAll());
-                }catch (SQLException e1){
-                    JOptionPane.showMessageDialog(null, e1.getMessage());
-                }catch (ClassNotFoundException e1){
-                    JOptionPane.showMessageDialog(null, e1.getMessage());
+                    ClassForRequests.deleteById(Integer.parseInt(idField.getText()));
+                    resultArea.setText(ClassForRequests.getAll());
                 }catch (Exception e1){
                     JOptionPane.showMessageDialog(null, e1.getMessage());
                 }
             }
         }
     };
-
-    public String getAll() throws SQLException, ClassNotFoundException{
-
-        String result="";
-        Connection c;
-        Statement stmt;
-        Class.forName("org.postgresql.Driver");
-        c = DriverManager
-                .getConnection("jdbc:postgresql://localhost:5432/netcracker","postgres", "tempus");
-        c.setAutoCommit(false);
-        String sql;
-        stmt = c.createStatement();
-        sql = "SELECT DISTINCT * FROM EMP, SALGRADE, dept " +
-                "WHERE (SAL BETWEEN SALGRADE.LOSAL AND SALGRADE.HISAL) AND" +
-                "(dept.deptno=emp.deptno)"+
-                "ORDER BY empno";
-        ResultSet rs =stmt.executeQuery(sql);
-        while (rs.next()) {
-            result+="EMPNO="+rs.getInt("EMPNO")+" NAME="+rs.getString("ename")+
-                    " JOB="+rs.getString("job")+" MGR="+rs.getString("mgr") +
-                    " HIREDATE=" +rs.getDate("hiredate")+" SAL="+rs.getDouble("sal")+
-                    " COMM="+rs.getDouble("comm")+" DEPTNO="+rs.getInt("deptno")+
-                    " DEPTNAME="+rs.getString("dname")+" DEPTLOC="+rs.getString("loc")+
-                    " SALGRADE="+rs.getInt("grade")+"\n";
-        }
-        rs.close();
-        stmt.close();
-        c.commit();
-        c.close();
-
-        return result;
-    }
-
-    public String getById(int id) throws SQLException, ClassNotFoundException{
-        String result="";
-        Connection c;
-        Class.forName("org.postgresql.Driver");
-        c = DriverManager
-                .getConnection("jdbc:postgresql://localhost:5432/netcracker","postgres", "tempus");
-        c.setAutoCommit(false);
-//            System.out.println("-- Opened database successfully");
-        PreparedStatement preparedStatement = c.prepareStatement(
-                "SELECT DISTINCT * FROM EMP, SALGRADE, dept " +
-                        "WHERE (emp.SAL BETWEEN SALGRADE.LOSAL AND SALGRADE.HISAL) AND" +
-                        "(emp.deptno=dept.deptno) AND (emp.EMPNO=?)");
-        preparedStatement.setInt(1, id);
-        ResultSet rs =preparedStatement.executeQuery();
-        c.commit();
-//            System.out.println("-- Selected");
-
-        while (rs.next()) {
-            result += "EMPNO=" + rs.getInt("EMPNO") + " NAME=" + rs.getString("ename") +
-                    " JOB=" + rs.getString("job") + " MGR=" + rs.getString("mgr") +
-                    " HIREDATE=" + rs.getDate("hiredate") + " SAL=" + rs.getDouble("sal") +
-                    " COMM=" + rs.getDouble("comm") + " DEPTNO=" + rs.getInt("deptno") +
-                    " DEPTNAME=" + rs.getString("dname") + " DEPTLOC=" + rs.getString("loc") +
-                    " SALGRADE=" + rs.getInt("grade") + "\n";
-        }
-        rs.close();
-        c.commit();
-        c.close();
-        return result;
-    }
-
-    public void deleteById(int id) throws SQLException, ClassNotFoundException{
-        Connection c;
-        Class.forName("org.postgresql.Driver");
-        c = DriverManager
-                .getConnection("jdbc:postgresql://localhost:5432/netcracker","postgres", "tempus");
-        c.setAutoCommit(false);
-        PreparedStatement preparedStatement = c.prepareStatement(
-                "DELETE FROM emp WHERE empno=?");
-        preparedStatement.setInt(1, id);
-        preparedStatement.executeUpdate();
-
-        c.commit();
-        c.close();
-    }
 }

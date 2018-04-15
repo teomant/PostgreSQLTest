@@ -73,7 +73,7 @@ public class AddNewGui extends JFrame {
         public void actionPerformed(ActionEvent e) {
             if ("add".equals(e.getActionCommand())){
                 try {
-                    addNew(empnoField.getText(),
+                    ClassForRequests.addNew(empnoField.getText(),
                             enameField.getText(),
                             jobField.getText(),
                             mgrField.getText(),
@@ -81,47 +81,10 @@ public class AddNewGui extends JFrame {
                             salField.getText(),
                             commField.getText(),
                             deptnoField.getText());
-                }catch (SQLException e1){
-                    JOptionPane.showMessageDialog(null, e1.getMessage());
-                }catch (ClassNotFoundException e1){
-                    JOptionPane.showMessageDialog(null, e1.getMessage());
-                }catch (ParseException e1){
+                }catch (Exception e1){
                     JOptionPane.showMessageDialog(null, e1.getMessage());
                 }
             }
         }
     };
-
-    public void addNew(String empno,
-                    String ename,
-                    String job,
-                    String mgr,
-                    String hiredate,
-                    String sal,
-                    String comm,
-                    String deptno) throws SQLException, ClassNotFoundException, ParseException{
-        Connection c;
-        Class.forName("org.postgresql.Driver");
-        c = DriverManager
-                .getConnection("jdbc:postgresql://localhost:5432/netcracker","postgres", "tempus");
-        c.setAutoCommit(false);
-        PreparedStatement preparedStatement = c.prepareStatement(
-                "INSERT INTO emp (empno,ename,job,mgr,hiredate,sal,comm,deptno)" +
-                        " VALUES (?, ?, ?, ?, ?, ?, ?, ?);");
-        preparedStatement.setInt(1, Integer.parseInt(empno));
-        preparedStatement.setString(2, ename);
-        preparedStatement.setString(3, job);
-        preparedStatement.setInt(4, Integer.parseInt(mgr));
-        DateTimeFormatter  formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-        LocalDate date = LocalDate.parse(hiredate, formatter);
-        preparedStatement.setDate(5, java.sql.Date.valueOf(date));
-        preparedStatement.setInt(6, Integer.parseInt(sal));
-        preparedStatement.setInt(7, Integer.parseInt(comm));
-        preparedStatement.setInt(8, Integer.parseInt(deptno));
-
-        preparedStatement.executeUpdate();
-
-        c.commit();
-        c.close();
-    }
 }
